@@ -55,4 +55,25 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser };
+const deleteUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Credenciales inválidas" });
+    }
+
+    await User.deleteOne({ _id: user._id });
+
+    res.json({ message: "Cuenta eliminada correctamente" });
+  } catch (error) {
+    res.status(500).json({ message: "Error en el servidor" });
+  }
+};
+module.exports = { registerUser, loginUser, deleteUser };
